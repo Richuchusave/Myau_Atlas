@@ -9,7 +9,6 @@ import myau.util.RenderUtil;
 import myau.util.font.FontManager;
 import myau.util.shader.ShadowShader;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +44,20 @@ public class Frame extends Component {
 
     @Override
     public void render(int mouseX, int mouseY, float partialTicks, float animationProgress, boolean isLast, int scrollOffset, float deltaTime) {
+        ClickGUIModule fallback = (ClickGUIModule) myau.Myau.moduleManager.getModule("ClickGUI");
+        int accent = fallback != null ? fallback.getAccentColor().getRGB() : MaterialTheme.PRIMARY;
+        boolean shadow = fallback == null || fallback.shadow.getValue();
+        render(mouseX, mouseY, partialTicks, animationProgress, isLast, scrollOffset, deltaTime,
+                accent, shadow, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Fast path used by the screen: accent/shadow resolved once per frame and
+     * shared by every category, and entries fully outside {@code [0, screenH]}
+     * are culled (2026-10-10).
+     */
+    public void render(int mouseX, int mouseY, float partialTicks, float animationProgress, boolean isLast,
+                       int scrollOffset, float deltaTime, int accentRgb, boolean shadowEnabled, int screenH) {
         float headerHeight = this.height;
         float listHeight = 0;
         for (ModuleEntry entry : moduleEntries) {
@@ -57,26 +70,24 @@ public class Frame extends Component {
         int alpha = (int) (255 * animationProgress);
         if (alpha < 5) return;
 
-        ClickGUIModule clickGUIModule = (ClickGUIModule) myau.Myau.moduleManager.getModule("ClickGUI");
-        boolean shadowEnabled = clickGUIModule != null && clickGUIModule.shadow.getValue();
         if (shadowEnabled) {
             int shadowAlpha = Math.min(120, (int) (alpha * 0.5));
-            int shadowColor = new Color(0, 0, 0, shadowAlpha).getRGB();
+            int shadowColor = MaterialTheme.withAlpha(0xFF000000, shadowAlpha);
             ShadowShader.drawShadow(x, scrolledY, width, currentHeight, MaterialTheme.CORNER_RADIUS_FRAME, 12.0f, shadowColor);
         }
 
         boolean showBottomRound = !expanded;
 
-        int frameBgColor = new Color(15, 15, 15, alpha).getRGB();
+        int frameBgColor = MaterialTheme.withAlpha(MaterialTheme.FRAME_BG, alpha);
         RenderUtil.drawRoundedRect(x, scrolledY, width, headerHeight, MaterialTheme.CORNER_RADIUS_FRAME, frameBgColor, true, true, showBottomRound, showBottomRound);
 
         if (expanded) {
             float contentH = currentHeight - headerHeight;
-            int listBgColor = new Color(28, 28, 28, alpha).getRGB();
+            int listBgColor = MaterialTheme.withAlpha(MaterialTheme.LIST_BG, alpha);
             RenderUtil.drawRoundedRect(x, scrolledY + headerHeight, width, contentH, MaterialTheme.CORNER_RADIUS_FRAME, listBgColor, false, false, true, true);
         }
 
-        int textColor = new Color(255, 255, 255, alpha).getRGB();
+        int textColor = MaterialTheme.withAlpha(0xFFFFFFFF, alpha);
         if (FontManager.productSans20 != null) {
             float textY = (float) (scrolledY + (headerHeight - FontManager.productSans20.getHeight()) / 2f + 1);
             FontManager.productSans20.drawString(categoryName, x + 8, textY, textColor);
@@ -95,7 +106,8 @@ public class Frame extends Component {
                 entry.setX(x);
                 entry.setY(currentModuleY);
                 entry.setWidth(width);
-                entry.render(mouseX, mouseY, partialTicks, animationProgress, i == moduleEntries.size() - 1, scrollOffset, deltaTime);
+                entry.renderFast(mouseX, mouseY, partialTicks, animationProgress, i == moduleEntries.size() - 1,
+                        scrollOffset, deltaTime, accentRgb, screenH);
                 currentModuleY += (int) entry.getCurrentHeight();
             }
             RenderUtil.releaseScissor();

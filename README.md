@@ -26,24 +26,24 @@ This fork reworks many modules and adds diagnostics, all measured against real g
 - **FlagDetector** — reads server corrections, refused placements and damage cuts ("mitigation"), and attributes
   each one to the module most likely responsible. Writes per-session logs under `config/Myau/`.
 - **PlayTracker** HUD — play time, games played and a mitigation indicator.
-- **Atlas ClickGUI** — every module and setting has a description, in Chinese or English
-  (Client Settings → Language); Chinese text is drawn with Noto Sans SC. Light / Dark mode for the menu and the HUD.
-- **HUD Editor** — open it from the Atlas header and drag HUD elements into place (snapping, arrow-key nudges).
+- **Raven ClickGUI** — Kclient-style columns (left-click toggles, right-click expands), a search box
+  that filters every category at once, click-to-cycle modes, inline sliders, colour picker and keybinds.
+  No shaders, no animations: it stays at full FPS with 200+ modules open.
+- **HUD Editor** — open it from the HUD button next to the search box and drag HUD elements into place (snapping, arrow-key nudges).
 - 230+ unit tests.
 
 `docs/ENGINEERING-NOTES.md` is the full development log: what was measured, what changed and why. Read it before
 changing a module.
 
-## Atlas ClickGUI
+## Raven ClickGUI
 
-| Modules and settings | Mode dropdown |
-|---|---|
-| ![Atlas: Combat modules and Clutch settings](images/atlas/atlas-combat-clutch.png) | ![Atlas: FakeLag mode dropdown](images/atlas/atlas-fakelag-mode.png) |
+One draggable column per category: left-click a module to toggle it, right-click to open its settings,
+right-click a header to collapse the column, scroll inside a column to move through it.
+The search box filters all categories at once; the HUD button opens the HUD editor.
 
-![Atlas: Legit tab](images/atlas/atlas-legit.png)
-
-Search, categories, a Legit tab, per-module descriptions and grouped settings with hints.
-Client Settings holds the theme and the language (中文 / English).
+Left-click a mode to step forward through it, right-click to step back. Sliders can also be
+nudged with the mouse wheel while hovered. Style (Normal / Raven) and accent colour live in the
+ClickGUI module settings; old configs saved with the retired Atlas style fall back to Raven.
 
 ## Community
 
@@ -84,12 +84,12 @@ Discord 社群（下載、問題、回報 bug、建議）：**https://discord.gg
 - **轉頭引擎**：可調速度隨機、弧線、減速（`Rotations` 模組）。
 - **FlagDetector**：偵測伺服器拉回、被退回的方塊、減傷（mitigation），並推估是哪個模組造成的。
 - **PlayTracker** HUD：遊玩時間、場數、減傷提示。
-- **Atlas 點擊選單**：每個模組和設定都有中英文說明（Client Settings → Language），中文用思源黑體繪製；選單與 HUD 支援淺色／深色模式。
-- **HUD 編輯器**：從 Atlas 標題列打開，直接拖曳 HUD 位置（自動對齊、方向鍵微調）。
+- **Raven 點擊選單**：Kclient 式分類欄（左鍵開關、右鍵展開）、搜尋框一次過濾所有分類；無著色器、無動畫，模組再多也不掉幀。
+- **HUD 編輯器**：從搜尋框旁的 HUD 按鈕打開，直接拖曳 HUD 位置（自動對齊、方向鍵微調）。
 
 開發紀錄在 `docs/ENGINEERING-NOTES.md`。
 
-Atlas 點擊選單的截圖在上面的「Atlas ClickGUI」段落。
+點擊選單的說明在上面的「Raven ClickGUI」段落。
 
 編譯：需要 JDK 17，執行 `./gradlew build`，jar 會在 `build/libs/`。
 

@@ -25,12 +25,12 @@ public class KeybindComponent extends Component {
         int scrolledY = y - scrollOffset;
         int alpha = (int) (255 * easedProgress);
         if (easedProgress > 0.9f) {
-            int textColor = MaterialTheme.getRGBWithAlpha(MaterialTheme.TEXT_COLOR, alpha);
+            int textColor = MaterialTheme.withAlpha(MaterialTheme.TEXT, alpha);
             int valueColor;
             if (binding) {
-                valueColor = MaterialTheme.getRGBWithAlpha(MaterialTheme.PRIMARY_COLOR, alpha);
+                valueColor = MaterialTheme.withAlpha(MaterialTheme.PRIMARY, alpha);
             } else {
-                valueColor = MaterialTheme.getRGBWithAlpha(MaterialTheme.TEXT_COLOR_SECONDARY, alpha);
+                valueColor = MaterialTheme.withAlpha(MaterialTheme.TEXT_SECONDARY, alpha);
             }
             String nameText = "Keybind";
             String bindText;

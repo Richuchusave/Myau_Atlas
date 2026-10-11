@@ -31,6 +31,13 @@ public class ClickGuiScreen extends GuiScreen {
     private boolean isClosing = false;
     private long openTime = 0L;
     private long lastFrameTime;
+    /* Per-frame shared state, resolved once in drawScreen instead of once per
+       category per module (2026-10-10). */
+    private int frameAccent = MaterialTheme.PRIMARY;
+    private boolean frameShadow = true;
+    private int screenH;
+    private Module invWalkModule;
+    private static KeyBinding[] invWalkKeys;
 
     public ClickGuiScreen() {
         this.frames = new ArrayList<>();
@@ -38,7 +45,7 @@ public class ClickGuiScreen extends GuiScreen {
         /* One frame per category, in LiquidBounce's order, from the one table
            that says which module is where (ModuleCategories, 2026-09-28).
            This used to be five hand-kept lists; a module missing from them
-           was in no menu -- Atlas reads these frames too. */
+           was in no menu -- both menus build from that table now. */
         int currentX = 20;
         int currentY = 20;
         int frameWidth = 110;
@@ -67,13 +74,17 @@ public class ClickGuiScreen extends GuiScreen {
     @Override
     public void initGui() {
         super.initGui();
-        myau.util.font.FontManager.initializeFonts();
+        if (myau.util.font.FontManager.productSans20 == null) {
+            myau.util.font.FontManager.initializeFonts();
+        }
         this.isClosing = false;
         this.openTime = System.currentTimeMillis();
         this.lastFrameTime = System.nanoTime();
         this.scrollY = 0;
         this.targetScrollY = 0;
         this.velocity = 0;
+        this.screenH = new ScaledResolution(mc).getScaledHeight();
+        this.invWalkModule = Myau.moduleManager.getModule("InvWalk");
     }
 
     public void close() {
@@ -96,12 +107,21 @@ public class ClickGuiScreen extends GuiScreen {
         float screenAlpha = isClosing ? (1.0f - Math.min(1.0f, (float) elapsedTime / ANIMATION_DURATION)) : Math.min(1.0f, (float) elapsedTime / ANIMATION_DURATION);
         screenAlpha = (float) (1.0 - Math.pow(1.0 - screenAlpha, 3));
         if (screenAlpha > 0.01f) {
+            ClickGUIModule style = (ClickGUIModule) Myau.moduleManager.getModule("ClickGUI");
+            this.frameAccent = style != null ? style.getAccentColor().getRGB() : MaterialTheme.PRIMARY;
+            this.frameShadow = style == null || style.shadow.getValue();
+            ScaledResolution sr = new ScaledResolution(mc);
+            this.screenH = sr.getScaledHeight();
             for (Frame frame : frames) {
-                frame.render(mouseX, mouseY, partialTicks, screenAlpha, false, scrollY, deltaTime);
+                if (frame.getY() - scrollY > this.screenH
+                        || frame.getY() - scrollY + frame.getCurrentHeight() < 0) {
+                    continue;
+                }
+                frame.render(mouseX, mouseY, partialTicks, screenAlpha, false, scrollY, deltaTime,
+                        this.frameAccent, this.frameShadow, this.screenH);
             }
         }
         try {
-            Module invWalkModule = Myau.moduleManager.getModule("InvWalk");
             if (invWalkModule != null && invWalkModule.isEnabled()) {
                 handleInvWalk();
             }
@@ -111,13 +131,15 @@ public class ClickGuiScreen extends GuiScreen {
     }
 
     private void handleInvWalk() {
-        KeyBinding[] keys = {
-                mc.gameSettings.keyBindForward, mc.gameSettings.keyBindBack,
-                mc.gameSettings.keyBindLeft, mc.gameSettings.keyBindRight,
-                mc.gameSettings.keyBindJump, mc.gameSettings.keyBindSprint,
-                mc.gameSettings.keyBindSneak
-        };
-        for (KeyBinding key : keys) {
+        if (invWalkKeys == null) {
+            invWalkKeys = new KeyBinding[] {
+                    mc.gameSettings.keyBindForward, mc.gameSettings.keyBindBack,
+                    mc.gameSettings.keyBindLeft, mc.gameSettings.keyBindRight,
+                    mc.gameSettings.keyBindJump, mc.gameSettings.keyBindSprint,
+                    mc.gameSettings.keyBindSneak
+            };
+        }
+        for (KeyBinding key : invWalkKeys) {
             KeyBinding.setKeyBindState(key.getKeyCode(), Keyboard.isKeyDown(key.getKeyCode()));
         }
     }
@@ -218,8 +240,7 @@ public class ClickGuiScreen extends GuiScreen {
             int bottom = frame.getY() + (int) frame.getCurrentHeight();
             if (bottom > max) max = bottom;
         }
-        ScaledResolution sr = new ScaledResolution(mc);
-        return Math.max(0, max - sr.getScaledHeight() + 20);
+        return Math.max(0, max - this.screenH + 20);
     }
 
     @Override

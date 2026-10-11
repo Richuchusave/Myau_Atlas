@@ -10,7 +10,6 @@ import myau.util.AnimationUtil;
 import myau.util.RenderUtil;
 import myau.util.font.FontManager;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class ModuleEntry extends Component {
         this.module = module;
         this.expanded = false;
         this.propertiesComponents = new ArrayList<>();
-        this.currentColor = MaterialTheme.getRGB(MaterialTheme.TEXT_COLOR);
+        this.currentColor = MaterialTheme.TEXT;
         initializePropertiesComponents();
     }
 
@@ -79,20 +78,33 @@ public class ModuleEntry extends Component {
 
     @Override
     public void render(int mouseX, int mouseY, float partialTicks, float animationProgress, boolean isLast, int scrollOffset, float deltaTime) {
+        myau.module.modules.ClickGUIModule clickGUI = (myau.module.modules.ClickGUIModule) Myau.moduleManager.getModule("ClickGUI");
+        int accent = clickGUI != null ? clickGUI.getAccentColor().getRGB() : MaterialTheme.PRIMARY;
+        renderFast(mouseX, mouseY, partialTicks, animationProgress, isLast, scrollOffset, deltaTime,
+                accent, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Fast path used by the frame: accent resolved once per frame, and entries
+     * fully outside {@code [0, screenH]} skip all drawing (2026-10-10).
+     */
+    public void renderFast(int mouseX, int mouseY, float partialTicks, float animationProgress, boolean isLast,
+                           int scrollOffset, float deltaTime, int accentRgb, int screenH) {
         int scrolledY = y - scrollOffset;
+        if (scrolledY + getCurrentHeight() < 0 || scrolledY > screenH) {
+            return;
+        }
         boolean hovered = isMouseOverHeader(mouseX, mouseY, scrollOffset);
         int alpha = (int) (255 * animationProgress);
 
         float targetHover = hovered ? 1.0f : 0.0f;
         this.hoverOpacity = AnimationUtil.animateSmooth(targetHover, this.hoverOpacity, 10.0f, deltaTime);
         if (hoverOpacity > 0.01f) {
-            int hoverColor = MaterialTheme.getRGBWithAlpha(MaterialTheme.SURFACE_CONTAINER_HIGH, (int) (alpha * hoverOpacity));
+            int hoverColor = MaterialTheme.withAlpha(MaterialTheme.HOVER_BG, (int) (alpha * hoverOpacity));
             RenderUtil.drawRoundedRect(x + 2, scrolledY, width - 4, height, 4, hoverColor, true, true, true, true);
         }
 
-        myau.module.modules.ClickGUIModule clickGUI = (myau.module.modules.ClickGUIModule) Myau.moduleManager.getModule("ClickGUI");
-        java.awt.Color accent = (clickGUI != null) ? clickGUI.getAccentColor() : MaterialTheme.PRIMARY_COLOR;
-        int targetColor = module.isEnabled() ? MaterialTheme.getRGB(accent) : MaterialTheme.getRGB(MaterialTheme.TEXT_COLOR);
+        int targetColor = module.isEnabled() ? accentRgb : MaterialTheme.TEXT;
         this.currentColor = AnimationUtil.interpolateColor(this.currentColor, targetColor, 10.0f * deltaTime);
         int finalTextColor = (this.currentColor & 0x00FFFFFF) | (alpha << 24);
 
@@ -103,7 +115,7 @@ public class ModuleEntry extends Component {
                 if (!propertiesComponents.isEmpty()) {
                     String icon = expanded ? "..." : ":";
                     float iconW = (float) FontManager.productSans16.getStringWidth(icon);
-                    FontManager.productSans16.drawString(icon, x + width - iconW - 8, textY, MaterialTheme.getRGBWithAlpha(MaterialTheme.TEXT_COLOR_SECONDARY, alpha));
+                    FontManager.productSans16.drawString(icon, x + width - iconW - 8, textY, MaterialTheme.withAlpha(MaterialTheme.TEXT_SECONDARY, alpha));
                 }
             } else {
                 mc.fontRendererObj.drawStringWithShadow(module.getName(), x + 8, scrolledY + 6, finalTextColor);
@@ -130,7 +142,7 @@ public class ModuleEntry extends Component {
             float bgRight = x + width - 2;
             float bgBottom = bgTop + currentSettingsHeight;
 
-            RenderUtil.drawRect(bgLeft, bgTop, bgRight, bgBottom, new Color(10, 10, 12, (int) (100 * (alpha / 255f))).getRGB());
+            RenderUtil.drawRect(bgLeft, bgTop, bgRight, bgBottom, MaterialTheme.withAlpha(MaterialTheme.ROW_BG, (int) (100 * (alpha / 255f))));
 
             RenderUtil.scissor(x, scrolledY + height, width, currentSettingsHeight);
 

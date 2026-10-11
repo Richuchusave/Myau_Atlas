@@ -12,10 +12,11 @@ import java.util.Map;
  * Which category every module is in -- the one place that says so
  * (2026-09-28, sorted after LiquidBounce's categories).
  *
- * The classic menu used to hardcode five lists of its own, and Atlas read
- * those; a module missing from them was in no menu at all (seven were).
- * The classic menu now builds its frames from here, Atlas follows it as
- * before, and a unit test fails when a registered module has no entry.
+ * The classic menu used to hardcode five lists of its own, and the second
+ * menu read those; a module missing from them was in no menu at all
+ * (seven were).
+ * Both menus now build from here, and a unit test fails when a registered
+ * module has no entry.
  *
  * Where LiquidBounce has the module, it sits where LiquidBounce puts it
  * (Scaffold, FastPlace, Timer and ChestStealer in World; AntiBot and the

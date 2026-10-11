@@ -10,7 +10,6 @@ import myau.util.RenderUtil;
 import myau.util.font.FontManager;
 import org.lwjgl.input.Mouse;
 
-import java.awt.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -20,6 +19,10 @@ public class Slider extends Component {
     private final double min, max;
     private final double step;
     private boolean dragging;
+    /* Render hot path must not allocate (2026-10-10): the value label is
+       reformatted only when the value changes, and colours are constants. */
+    private double shownValue = Double.NaN;
+    private String shownText = "";
 
     public Slider(Property property, int x, int y, int width, int height) {
         super(x, y, width, height);
@@ -80,8 +83,14 @@ public class Slider extends Component {
 
         if (easedProgress > 0.5f) {
             String name = property.getName();
-            String valStr = round(value) + (this.property instanceof PercentProperty ? "%" : "");
-            int textColor = MaterialTheme.getRGBWithAlpha(MaterialTheme.TEXT_COLOR, alpha);
+            if (value != shownValue) {
+                shownValue = value;
+                double rounded = Math.round(value * 100.0) / 100.0;
+                shownText = (rounded == Math.rint(rounded) ? Long.toString(Math.round(rounded)) : Double.toString(rounded))
+                        + (this.property instanceof PercentProperty ? "%" : "");
+            }
+            String valStr = shownText;
+            int textColor = MaterialTheme.withAlpha(MaterialTheme.TEXT, alpha);
             float textY = scrolledY + 2;
             if (FontManager.productSans16 != null) {
                 FontManager.productSans16.drawString(name, x + 2, textY, textColor);
@@ -98,10 +107,10 @@ public class Slider extends Component {
         int trackX = x + 2;
         int trackWidth = width - 4;
 
-        RenderUtil.drawRoundedRect(trackX, trackY, trackWidth, trackHeight, trackHeight / 2f, new Color(40, 40, 45).getRGB(), true, true, true, true);
+        RenderUtil.drawRoundedRect(trackX, trackY, trackWidth, trackHeight, trackHeight / 2f, MaterialTheme.TRACK_BG, true, true, true, true);
 
         float fillWidth = (float) (trackWidth * fillProgress);
-        int accentColor = MaterialTheme.getRGBWithAlpha(MaterialTheme.PRIMARY_COLOR, alpha);
+        int accentColor = MaterialTheme.withAlpha(MaterialTheme.PRIMARY, alpha);
         RenderUtil.drawRoundedRect(trackX, trackY, fillWidth, trackHeight, trackHeight / 2f, accentColor, true, false, false, true);
 
         float knobX = trackX + fillWidth - 2;
@@ -129,12 +138,6 @@ public class Slider extends Component {
             newValue = Math.max(min, Math.min(max, newValue));
             property.setValue((float) newValue);
         }
-    }
-
-    private double round(double value) {
-        BigDecimal bd = new BigDecimal(value);
-        bd = bd.setScale(2, RoundingMode.HALF_UP);
-        return bd.doubleValue();
     }
 
     @Override

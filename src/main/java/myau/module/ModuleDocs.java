@@ -47,7 +47,9 @@ public final class ModuleDocs {
     private ModuleDocs() {
     }
 
-    /* The menu's language: Atlas sets it from its Appearance page each frame. */
+    /* The menu's language. Nothing in the current menus sets it, so module
+       descriptions stay in their default language; kept for a future
+       settings page. */
     private static volatile boolean english;
 
     public static boolean isEnglish() {

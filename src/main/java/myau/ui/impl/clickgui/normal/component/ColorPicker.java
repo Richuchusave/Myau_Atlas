@@ -109,18 +109,19 @@ public class ColorPicker extends Component {
         float hueIndicatorX = pickerX + (hue * pickerW);
         RenderUtil.drawRect(hueIndicatorX - 1, hueY, hueIndicatorX + 1, hueY + hueHeight, 0xFFFFFFFF);
 
-        RenderUtil.drawRectOutline(pickerX - 1, pickerY - 1, pickerW + 2, pickerH + 2, 1.0f, MaterialTheme.getRGBWithAlpha(MaterialTheme.OUTLINE_COLOR, alpha));
+        RenderUtil.drawRectOutline(pickerX - 1, pickerY - 1, pickerW + 2, pickerH + 2, 1.0f, MaterialTheme.withAlpha(MaterialTheme.OUTLINE, alpha));
     }
 
+    private static final int[] RAINBOW = {
+            0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF,
+            0xFF0000FF, 0xFFFF00FF, 0xFFFF0000
+    };
+
     private void drawRainbowRect(float x, float y, float width, float height) {
-        int[] colors = {
-                0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF,
-                0xFF0000FF, 0xFFFF00FF, 0xFFFF0000
-        };
         float segmentWidth = width / 6.0f;
         for (int i = 0; i < 6; i++) {
             float currentX = x + (i * segmentWidth);
-            drawGradientRect(currentX, y, segmentWidth, height, colors[i], colors[i + 1], true);
+            drawGradientRect(currentX, y, segmentWidth, height, RAINBOW[i], RAINBOW[i + 1], true);
         }
     }
 

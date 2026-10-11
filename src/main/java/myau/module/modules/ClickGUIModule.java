@@ -6,7 +6,7 @@ import myau.property.properties.FloatProperty;
 import myau.property.properties.IntProperty;
 import myau.property.properties.ModeProperty;
 import myau.ui.impl.clickgui.normal.ClickGuiScreen;
-import myau.ui.impl.clickgui.atlas.AtlasClickGui;
+import myau.ui.impl.clickgui.raven.RavenClickGui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import org.lwjgl.input.Keyboard;
@@ -32,10 +32,12 @@ public class ClickGUIModule extends Module {
     };
 
     public ModeProperty accentColor = new ModeProperty("Color", 0, COLOR_NAMES);
-    /* Only Atlas and Normal (the backup) are left (2026-10-06): Raven B3/B4,
-       Cheadle, Modern and RiseLB were removed. The style is saved by name, so
-       a config naming one of the removed styles keeps this default, Atlas. */
-    public ModeProperty style = new ModeProperty("Style", 1, new String[]{"Normal", "Atlas"});
+    /* Only Normal (the classic columns) and Raven (the Kclient-inspired
+       rewrite) are left (2026-10-10): Atlas's glass menu was replaced by
+       Raven -- same columns, no shaders, plus search. The style is saved by
+       name, so a config saying "Atlas" no longer parses and keeps this
+       default, Raven. */
+    public ModeProperty style = new ModeProperty("Style", 1, new String[]{"Normal", "Raven"});
     public BooleanProperty saveGuiState = new BooleanProperty("Save GUI State", true);
     public BooleanProperty shadow = new BooleanProperty("Shadow", true);
 
@@ -71,14 +73,14 @@ public class ClickGUIModule extends Module {
 
     public GuiScreen getSelectedGui() {
         if (style.getValue() == 1) {
-            return AtlasClickGui.getInstance();
+            return RavenClickGui.getInstance();
         }
         return ClickGuiScreen.getInstance();
     }
 
     /** Whether the screen is one of the click menus. */
     public static boolean isClickGui(GuiScreen screen) {
-        return screen instanceof ClickGuiScreen || screen instanceof AtlasClickGui;
+        return screen instanceof ClickGuiScreen || screen instanceof RavenClickGui;
     }
 
     @Override

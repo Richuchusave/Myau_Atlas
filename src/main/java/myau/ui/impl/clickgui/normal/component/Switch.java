@@ -6,8 +6,6 @@ import myau.util.AnimationUtil;
 import myau.util.RenderUtil;
 import myau.util.font.FontManager;
 
-import java.awt.*;
-
 public class Switch extends Component {
     private final BooleanProperty booleanProperty;
     private float toggleAnim;
@@ -32,7 +30,7 @@ public class Switch extends Component {
         int alpha = (int) (255 * animationProgress);
         float target = booleanProperty.getValue() ? 1.0f : 0.0f;
         this.toggleAnim = AnimationUtil.animateSmooth(target, this.toggleAnim, 15.0f, deltaTime);
-        int textColor = MaterialTheme.getRGBWithAlpha(MaterialTheme.TEXT_COLOR, alpha);
+        int textColor = MaterialTheme.withAlpha(MaterialTheme.TEXT, alpha);
 
         float textY = scrolledY + (height - 8) / 2f;
         if (FontManager.productSans16 != null) {
@@ -46,14 +44,10 @@ public class Switch extends Component {
         int switchX = x + width - switchW - 2;
         int switchY = scrolledY + (height - switchH) / 2;
 
-        int disabledColor = new Color(60, 60, 65).getRGB();
-        int enabledColor = MaterialTheme.getRGB(MaterialTheme.PRIMARY_COLOR);
-
-        int switchColor = AnimationUtil.interpolateColor(disabledColor, enabledColor, toggleAnim);
+        int switchColor = AnimationUtil.interpolateColor(MaterialTheme.SWITCH_OFF, MaterialTheme.PRIMARY, toggleAnim);
 
         if (alpha < 255) {
-            Color c = new Color(switchColor);
-            switchColor = new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha).getRGB();
+            switchColor = MaterialTheme.withAlpha(switchColor, alpha);
         }
 
         int knobX = switchX + (int) (toggleAnim * (switchW - switchH));

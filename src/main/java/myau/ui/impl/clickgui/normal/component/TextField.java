@@ -6,8 +6,6 @@ import myau.util.RenderUtil;
 import myau.util.font.FontManager;
 import org.lwjgl.input.Keyboard;
 
-import java.awt.*;
-
 public class TextField extends Component {
     private final TextProperty textProperty;
     private String currentText;
@@ -35,9 +33,9 @@ public class TextField extends Component {
 
         int scrolledY = y - scrollOffset;
         int alpha = (int) (255 * animationProgress);
-        int bgColor = new Color(30, 30, 35, alpha).getRGB();
-        int borderColor = focused ? MaterialTheme.getRGBWithAlpha(MaterialTheme.PRIMARY_COLOR, alpha) :
-                new Color(60, 60, 65).getRGB();
+        int bgColor = MaterialTheme.withAlpha(MaterialTheme.FIELD_BG, alpha);
+        int borderColor = focused ? MaterialTheme.withAlpha(MaterialTheme.PRIMARY, alpha) :
+                MaterialTheme.FIELD_LINE;
 
         RenderUtil.drawRoundedRect(x + 2, scrolledY, width - 4, height, 4.0f, bgColor, true, true, true, true);
         RenderUtil.drawRoundedRectOutline(x + 2, scrolledY, width - 4, height, 4.0f, 1.0f, borderColor, true, true, true, true);
@@ -52,8 +50,8 @@ public class TextField extends Component {
             }
 
             String displayText = currentText.isEmpty() ? textProperty.getName() : currentText;
-            int textColor = currentText.isEmpty() ? new Color(120, 120, 120).getRGB() :
-                    MaterialTheme.getRGBWithAlpha(MaterialTheme.TEXT_COLOR, alpha);
+            int textColor = currentText.isEmpty() ? MaterialTheme.PLACEHOLDER :
+                    MaterialTheme.withAlpha(MaterialTheme.TEXT, alpha);
 
             float textY = scrolledY + (height - 8) / 2f;
             if (FontManager.productSans16 != null) {

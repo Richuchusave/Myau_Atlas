@@ -10,12 +10,12 @@ import java.io.FileReader;
 import java.io.Reader;
 
 /**
- * Dark or light, shared by the Atlas menu and every HUD element.
+ * Dark or light, read by every HUD element.
  *
- * The menu owns the setting ({@code appearance-mode} in atlas-theme.json) and
- * pushes it here every frame it is open. HUD elements only read it, and the
- * first read loads it from that file, so they follow the choice even in a game
- * where the menu has not been opened yet.
+ * The theme file ({@code appearance-mode} in atlas-theme.json) is only
+ * written by the retired Atlas menu; the current menus are dark-only, like
+ * Kclient. HUD elements read the last choice from that file, so they follow
+ * it even in a game where no menu has been opened yet.
  */
 public final class UiMode {
     private static final File THEME_FILE = new File("./config/Myau/atlas-theme.json");
